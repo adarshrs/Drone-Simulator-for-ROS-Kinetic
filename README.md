@@ -58,3 +58,18 @@ GUIDED> arm throttle
 GUIDED> takeoff 5   
 GUIDED> mode LAND
 ~~~
+
+## Sources
+
+The packages in this repo have been collected and modified from the following sources -
+
+* [Ardupilot](https://github.com/ArduPilot/ardupilot)
+* [MAVROS](https://github.com/mavlink/mavros/tree/indigo-devel)
+* [mav_comm](https://github.com/ethz-asl/mav_comm)
+* [drcsim](https://github.com/Hurisa/drcsim)
+* [hector_gazebo](https://github.com/tu-darmstadt-ros-pkg/hector_gazebo/tree/indigo-devel)
+* [ardupilot_sitl_gazebo_plugin](https://github.com/Hurisa/ardupilot_sitl_gazebo_plugin)
+* [sandia_hand](https://github.com/Hurisa/sandia_hand)
+* [glog_catkin](https://github.com/ethz-asl/glog_catkin)
+* [osrf-common](https://bitbucket.org/osrf/osrf-common/src/default/)
+* [rotors_simulator](https://github.com/ethz-asl/rotors_simulator)
