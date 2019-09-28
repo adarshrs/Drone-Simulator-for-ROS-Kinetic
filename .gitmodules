@@ -1,7 +1,7 @@
 [submodule "ardupilot"]
 	url = https://github.com/adarshrs/ardupilot
 [submodule "ardupilot_sitl_gazebo_plugin"]
-	url = https://github.com/Hurisa/ardupilot_sitl_gazebo_plugin
+	url = https://github.com/adarshrs/ardupilot_sitl_gazebo_plugin
 [submodule "drcsim"]
 	url = https://github.com/adarshrs/drcsim
 [submodule "mavros"]
