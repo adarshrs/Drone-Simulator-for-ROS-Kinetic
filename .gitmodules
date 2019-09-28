@@ -1,0 +1,6 @@
+[submodule "ardupilot"]
+	url = https://github.com/adarshrs/Drone-Simulator-for-ROS-Kinetic
+[submodule "ardupilot_sitl_gazebo_plugin"]
+	url = https://github.com/adarshrs/Drone-Simulator-for-ROS-Kinetic
+[submodule "autopilot/sitl/ardupilot"]
+	url = https://github.com/adarshrs/Drone-Simulator-for-ROS-Kinetic
