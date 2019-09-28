@@ -3,10 +3,16 @@
 [submodule "ardupilot_sitl_gazebo_plugin"]
 	url = https://github.com/Hurisa/ardupilot_sitl_gazebo_plugin
 [submodule "autopilot/sitl/ardupilot"]
-	url = https://github.com/ArduPilot/ardupilot
+	url = https://github.com/adarshrs/ardupilot_sitl_gazebo_plugin
 [submodule "drcsim"]
 	url = https://github.com/adarshrs/drcsim
 [submodule "mavros"]
 	url = https://github.com/adarshrs/mavros
 [submodule "mav_comm"]
 	url = https://github.com/adarshrs/mav_comm
+[submodule "hector_gazebo"]
+	url = https://github.com/adarshrs/hector_gazebo
+[submodule "rotors_simulator"]
+	url = https://github.com/adarshrs/rotors_simulator
+[submodule "sandia_hand"]
+	url = https://github.com/adarshrs/sandia_hand
