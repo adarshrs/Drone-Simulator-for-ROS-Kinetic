@@ -8,3 +8,5 @@
 	url = https://github.com/Hurisa/drcsim
 [submodule "mavros"]
 	url = https://github.com/adarshrs/mavros
+[submodule "mav_comm"]
+	url = https://github.com/adarshrs/mav_comm
