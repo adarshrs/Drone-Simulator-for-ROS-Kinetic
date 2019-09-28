@@ -2,3 +2,5 @@
 	url = https://github.com/ArduPilot/ardupilot
 [submodule "ardupilot_sitl_gazebo_plugin"]
 	url = https://github.com/Hurisa/ardupilot_sitl_gazebo_plugin
+[submodule "autopilot/sitl/ardupilot"]
+	url = https://github.com/ArduPilot/ardupilot
