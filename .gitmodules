@@ -10,5 +10,3 @@
 	url = https://github.com/adarshrs/rotors_simulator
 [submodule "sandia_hand"]
 	url = https://github.com/adarshrs/sandia_hand
-[submodule "autopilot/sitl/ardupilot"]
-	url = https://github.com/adarshrs/ardupilot
