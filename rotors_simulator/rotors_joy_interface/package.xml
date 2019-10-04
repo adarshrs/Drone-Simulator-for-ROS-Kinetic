@@ -1,10 +1,9 @@
 <package>
   <name>rotors_joy_interface</name>
-  <version>2.2.3</version>
+  <version>1.0.0</version>
   <description>The rotors_joy_interface package to control MAVs with a joystick</description>
 
-  <maintainer email="fadri.furrer@mavt.ethz.ch">Fadri Furrer</maintainer>
-  <maintainer email="mina.kamel@mavt.ethz.ch">Mina Kamel</maintainer>
+  <maintainer email="markus.achtelik_devel@mavt.ethz.ch">Markus Achtelik</maintainer>
 
   <author>Fadri Furrer</author>
   <author>Michael Burri</author>
@@ -14,9 +13,6 @@
 
   <license>ASL 2.0</license>
 
-  <url type="website">https://github.com/ethz-asl/rotors_simulator</url>
-  <url type="bugtracker">https://github.com/ethz-asl/rotors_simulator/issues</url>
-
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Dependencies needed to compile this package. -->
@@ -24,13 +20,11 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>mav_msgs</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>trajectory_msgs</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>mav_msgs</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>trajectory_msgs</run_depend>
 
 </package>

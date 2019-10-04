@@ -1,17 +1,18 @@
 #ifndef INCLUDE_ROTORS_CONTROL_PARAMETERS_ROS_H_
 #define INCLUDE_ROTORS_CONTROL_PARAMETERS_ROS_H_
 
+#include <glog/logging.h>
 #include <ros/ros.h>
 
 #include "rotors_control/parameters.h"
 
 namespace rotors_control {
 
-template<typename T> inline void GetRosParameter(const ros::NodeHandle& nh,
-                                                 const std::string& key,
-                                                 const T& default_value,
-                                                 T* value) {
-  ROS_ASSERT(value != nullptr);
+template<typename T> void GetRosParameter(const ros::NodeHandle& nh,
+                                          const std::string& key,
+                                          const T& default_value,
+                                          T* value) {
+  CHECK_NOTNULL(value);
   bool have_parameter = nh.getParam(key, *value);
   if (!have_parameter) {
     ROS_WARN_STREAM("[rosparam]: could not find parameter " << nh.getNamespace()
@@ -20,8 +21,7 @@ template<typename T> inline void GetRosParameter(const ros::NodeHandle& nh,
   }
 }
 
-inline void GetRotorConfiguration(const ros::NodeHandle& nh,
-                                  RotorConfiguration* rotor_configuration) {
+void GetRotorConfiguration(const ros::NodeHandle& nh, RotorConfiguration* rotor_configuration) {
   std::map<std::string, double> single_rotor;
   std::string rotor_configuration_string = "rotor_configuration/";
   unsigned int i = 0;
@@ -45,7 +45,7 @@ inline void GetRotorConfiguration(const ros::NodeHandle& nh,
   }
 }
 
-inline void GetVehicleParameters(const ros::NodeHandle& nh, VehicleParameters* vehicle_parameters) {
+void GetVehicleParameters(const ros::NodeHandle& nh, VehicleParameters* vehicle_parameters) {
   GetRosParameter(nh, "mass",
                   vehicle_parameters->mass_,
                   &vehicle_parameters->mass_);

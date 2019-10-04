@@ -21,20 +21,16 @@
 
 #include "rotors_joy_interface/joy.h"
 
-#include <mav_msgs/default_topics.h>
-
 Joy::Joy() {
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
-  ctrl_pub_ = nh_.advertise<mav_msgs::RollPitchYawrateThrust> (
-    mav_msgs::default_topics::COMMAND_ROLL_PITCH_YAWRATE_THRUST, 10);
+  ctrl_pub_ = nh_.advertise<mav_msgs::CommandRollPitchYawrateThrust> (
+    "command/roll_pitch_yawrate_thrust", 10);
 
   control_msg_.roll = 0;
   control_msg_.pitch = 0;
   control_msg_.yaw_rate = 0;
-  control_msg_.thrust.x = 0;
-  control_msg_.thrust.y = 0;
-  control_msg_.thrust.z = 0;
+  control_msg_.thrust = 0;
   current_yaw_vel_ = 0;
 
   pnh.param("axis_roll_", axes_.roll, 0);
@@ -53,8 +49,6 @@ Joy::Joy() {
 
   pnh.param("v_yaw_step", v_yaw_step_, 0.05);  // [rad/s]
 
-  pnh.param("is_fixed_wing", is_fixed_wing_, false);
-
   pnh.param("button_yaw_left_", buttons_.yaw_left, 3);
   pnh.param("button_yaw_right_", buttons_.yaw_right, 4);
   pnh.param("button_ctrl_enable_", buttons_.ctrl_enable, 5);
@@ -70,9 +64,7 @@ void Joy::StopMav() {
   control_msg_.roll = 0;
   control_msg_.pitch = 0;
   control_msg_.yaw_rate = 0;
-  control_msg_.thrust.x = 0;
-  control_msg_.thrust.y = 0;
-  control_msg_.thrust.z = 0;
+  control_msg_.thrust = 0;
 }
 
 void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
@@ -90,15 +82,7 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
     current_yaw_vel_ = 0;
   }
   control_msg_.yaw_rate = current_yaw_vel_;
-
-  if (is_fixed_wing_) {
-    double thrust = msg->axes[axes_.thrust] * axes_.thrust_direction;
-    control_msg_.thrust.x = (thrust >= 0.0) ? thrust : 0.0;
-  }
-  else {
-    control_msg_.thrust.z = (msg->axes[axes_.thrust] + 1) * max_.thrust / 2.0 * axes_.thrust_direction;
-  }
-
+  control_msg_.thrust = (msg->axes[axes_.thrust] + 1) * max_.thrust / 2.0 * axes_.thrust_direction;
   ros::Time update_time = ros::Time::now();
   control_msg_.header.stamp = update_time;
   control_msg_.header.frame_id = "rotors_joy_frame";

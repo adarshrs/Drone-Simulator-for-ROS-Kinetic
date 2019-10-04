@@ -4,7 +4,6 @@
  * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
  * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
  * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
- * Copyright 2016 Geoffrey Hunter <gbmhunter@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,34 +32,47 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/WrenchStamped.h>
-#include <mav_msgs/Actuators.h>
-#include <mav_msgs/AttitudeThrust.h>
-#include <mav_msgs/default_topics.h>
-#include <mav_msgs/RateThrust.h>
+#include <mav_msgs/CommandAttitudeThrust.h>
+#include <mav_msgs/CommandMotorSpeed.h>
+#include <mav_msgs/CommandRateThrust.h>
+#include <mav_msgs/CommandTrajectory.h>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Float32.h>
-#include <trajectory_msgs/MultiDOFJointTrajectory.h>
 
-#include "rotors_comm/RecordRosbag.h"
-#include "rotors_comm/WindSpeed.h"
 #include "rotors_gazebo_plugins/common.h"
 
 
 namespace gazebo {
+// Default values
+static const std::string kDefaultNamespace = "";
 
-// Default values, the rest from common.h
+static const std::string kDefaultGroundTruthPosePubTopic = "/ground_truth/pose";
+static const std::string kDefaultGroundTruthTwistPubTopic = "/ground_truth/twist";
+static const std::string kDefaultImuPubTopic = "/imu";
+static const std::string kDefaultImuSubTopic = "/imu";
+static const std::string kDefaultControlAttitudeThrustPubTopic = "/command/attitude";
+static const std::string kDefaultControlAttitudeThrustSubTopic = "/command/attitude";
+static const std::string kDefaultControlMotorSpeedPubTopic = "/command/motors";
+static const std::string kDefaultControlMotorSpeedSubTopic = "/command/motors";
+static const std::string kDefaultControlRateThrustPubTopic = "/command/rate";
+static const std::string kDefaultControlRateThrustSubTopic = "/command/rate";
+static const std::string kDefaultMotorPubTopic = "/motors";
+static const std::string kDefaultCollisionsPubTopic = "/collisions";
+static const std::string kDefaultWindPubTopic = "/wind";
+static const std::string kDefaultWindSubTopic = "/wind";
+static const std::string kDefaultWaypointPubTopic = "/waypoint";
+static const std::string kDefaultWaypointSubTopic = "/waypoint";
+
 static const std::string kDefaultFrameId = "ground_truth_pose";
 static const std::string kDefaultLinkName = "base_link";
 static const std::string kDefaultBagFilename_ = "simulator.bag";
-static const std::string kDefaultRecordingServiceName = "record_rosbag";
-static constexpr bool kDefaultWaitToRecord = false;
-static constexpr bool kDefaultIsRecording = false;
 
-/// \brief    This plugin is used to create rosbag files from within gazebo.
-/// \details  This plugin is ROS dependent, and is not built if NO_ROS=TRUE is provided to
-///           CMakeLists.txt (as in the case of a PX4/Firmware build).
+static constexpr double kDefaultRotorVelocitySlowdownSim = 10.0;
+
+
+/// \brief This plugin is used to create rosbag files from within gazebo.
 class GazeboBagPlugin : public ModelPlugin {
   typedef std::map<const unsigned int, const physics::JointPtr> MotorNumberToJointMap;
   typedef std::pair<const unsigned int, const physics::JointPtr> MotorNumberToJointPair;
@@ -68,29 +80,27 @@ class GazeboBagPlugin : public ModelPlugin {
   GazeboBagPlugin()
       : ModelPlugin(),
         namespace_(kDefaultNamespace),
-        // DEFAULT TOPICS
-        ground_truth_pose_topic_(mav_msgs::default_topics::GROUND_TRUTH_POSE),
-        ground_truth_twist_topic_(mav_msgs::default_topics::GROUND_TRUTH_TWIST),
-        imu_topic_(mav_msgs::default_topics::IMU),
-        control_attitude_thrust_topic_(mav_msgs::default_topics::COMMAND_ATTITUDE_THRUST),
-        control_motor_speed_topic_(mav_msgs::default_topics::COMMAND_ACTUATORS),
-        control_rate_thrust_topic_(mav_msgs::default_topics::COMMAND_RATE_THRUST),
-        wind_speed_topic_(mav_msgs::default_topics::WIND_SPEED),
-        motor_topic_(mav_msgs::default_topics::MOTOR_MEASUREMENT),
-        wrench_topic_(mav_msgs::default_topics::WRENCH),
-        external_force_topic_(mav_msgs::default_topics::EXTERNAL_FORCE),
-        waypoint_topic_(mav_msgs::default_topics::COMMAND_TRAJECTORY),
-        command_pose_topic_(mav_msgs::default_topics::COMMAND_POSE),
-        //---------------
+        ground_truth_pose_pub_topic_(kDefaultGroundTruthPosePubTopic),
+        ground_truth_twist_pub_topic_(kDefaultGroundTruthTwistPubTopic),
+        imu_pub_topic_(kDefaultImuPubTopic),
+        imu_sub_topic_(kDefaultImuSubTopic),
+        control_attitude_thrust_pub_topic_(kDefaultControlAttitudeThrustPubTopic),
+        control_attitude_thrust_sub_topic_(kDefaultControlAttitudeThrustSubTopic),
+        control_motor_speed_pub_topic_(kDefaultControlMotorSpeedPubTopic),
+        control_motor_speed_sub_topic_(kDefaultControlMotorSpeedSubTopic),
+        control_rate_thrust_pub_topic_(kDefaultControlRateThrustPubTopic),
+        control_rate_thrust_sub_topic_(kDefaultControlRateThrustSubTopic),
+        motor_pub_topic_(kDefaultMotorPubTopic),
+        collisions_pub_topic_(kDefaultCollisionsPubTopic),
+        wind_pub_topic_(kDefaultWindPubTopic),
+        wind_sub_topic_(kDefaultWindSubTopic),
+        waypoint_pub_topic_(kDefaultWaypointPubTopic),
+        waypoint_sub_topic_(kDefaultWaypointSubTopic),
         frame_id_(kDefaultFrameId),
         link_name_(kDefaultLinkName),
         bag_filename_(kDefaultBagFilename_),
-        recording_service_name_(kDefaultRecordingServiceName),
         rotor_velocity_slowdown_sim_(kDefaultRotorVelocitySlowdownSim),
-        wait_to_record_(kDefaultWaitToRecord),
-        is_recording_(kDefaultIsRecording),
-        node_handle_(nullptr),
-        contact_mgr_(nullptr) {}
+        node_handle_(NULL) {}
 
   virtual ~GazeboBagPlugin();
 
@@ -104,43 +114,29 @@ class GazeboBagPlugin : public ModelPlugin {
   /// \param[in] _info Update timing information.
   void OnUpdate(const common::UpdateInfo& /*_info*/);
 
-  /// \brief Starting recording the rosbag
-  void StartRecording();
-
-  /// \brief Stop recording the rosbag
-  void StopRecording();
-
   /// \brief Called when an IMU message is received.
   /// \param[in] imu_msg A IMU message from sensor_msgs.
   void ImuCallback(const sensor_msgs::ImuConstPtr& imu_msg);
 
-  /// \brief Called when an WrenchStamped message is received.
-  /// \param[in] force_msg A WrenchStamped message from geometry_msgs.
-  void ExternalForceCallback(const geometry_msgs::WrenchStampedConstPtr& force_msg);
+  /// \brief Called when an Wind message is received.
+  /// \param[in] wind_msg A WrenchStamped message from geometry_msgs.
+  void WindCallback(const geometry_msgs::WrenchStampedConstPtr& wind_msg);
 
-  /// \brief Called when a MultiDOFJointTrajectoryPoint message is received.
-  /// \param[in] trajectory_msg A MultiDOFJointTrajectoryPoint message from trajectory_msgs.
-  void WaypointCallback(const trajectory_msgs::MultiDOFJointTrajectoryConstPtr& trajectory_msg);
+  /// \brief Called when an Trajectory message is received.
+  /// \param[in] trajectory_msg A CommandTrajectory message from mav_msgs.
+  void WaypointCallback(const mav_msgs::CommandTrajectoryConstPtr& trajectory_msg);
 
-  /// \brief Called when a PoseStamped message is received.
-  /// \param[in] pose_msg A PoseStamped message from geometry_msgs.
-  void CommandPoseCallback(const geometry_msgs::PoseStampedConstPtr& pose_msg);
+  /// \brief Called when a CommandAttitudeThrust message is received.
+  /// \param[in] control_msg A CommandAttitudeThrust message from mav_msgs.
+  void CommandAttitudeThrustCallback(const mav_msgs::CommandAttitudeThrustConstPtr& control_msg);
 
-  /// \brief Called when a AttitudeThrust message is received.
-  /// \param[in] control_msg A AttitudeThrust message from mav_msgs.
-  void AttitudeThrustCallback(const mav_msgs::AttitudeThrustConstPtr& control_msg);
+  /// \brief Called when a CommandMotorSpeed message is received.
+  /// \param[in] control_msg A CommandMotorSpeed message from mav_msgs.
+  void CommandMotorSpeedCallback(const mav_msgs::CommandMotorSpeedConstPtr& control_msg);
 
-  /// \brief Called when a Actuators message is received.
-  /// \param[in] control_msg A Actuators message from mav_msgs.
-  void ActuatorsCallback(const mav_msgs::ActuatorsConstPtr& control_msg);
-
-  /// \brief Called when a RateThrust message is received.
-  /// \param[in] control_msg A RateThrust message from mav_msgs.
-  void RateThrustCallback(const mav_msgs::RateThrustConstPtr& control_msg);
-
-  /// \brief Called when a WindSpeed message is received.
-  /// \param[in] wind_speed_msg A WindSpeed message from rotors_comm.
-  void WindSpeedCallback(const rotors_comm::WindSpeedConstPtr& wind_speed_msg);
+  /// \brief Called when a CommandRateThrust message is received.
+  /// \param[in] control_msg A CommandRateThrust message from mav_msgs.
+  void CommandRateThrustCallback(const mav_msgs::CommandRateThrustConstPtr& control_msg);
 
   /// \brief Log the ground truth pose and twist.
   /// \param[in] now The current gazebo common::Time
@@ -150,15 +146,9 @@ class GazeboBagPlugin : public ModelPlugin {
   /// \param[in] now The current gazebo common::Time
   void LogMotorVelocities(const common::Time now);
 
-  /// \brief Log all the wrenches.
+  /// \brief Log all the collisions.
   /// \param[in] now The current gazebo common::Time
-  void LogWrenches(const common::Time now);
-
-  /// \brief Called when a request to start or stop recording is received.
-  /// \param[in] req The request to start or stop recording.
-  /// \param[out] res The response to be sent back to the client.
-  bool RecordingServiceCallback(rotors_comm::RecordRosbag::Request& req,
-                                rotors_comm::RecordRosbag::Response& res);
+  void LogCollisions(const common::Time now);
 
  private:
   /// \brief Pointer to the update event connection.
@@ -172,53 +162,45 @@ class GazeboBagPlugin : public ModelPlugin {
 
   MotorNumberToJointMap motor_joints_;
 
-  /// \brief    Pointer to the ContactManager to get all collisions of this
-  ///           link and its children.
+  // /// \brief Pointer to the ContactManager to get all collisions of this
+  // /// link and its children
   physics::ContactManager *contact_mgr_;
 
   std::string namespace_;
-  std::string ground_truth_pose_topic_;
-  std::string ground_truth_twist_topic_;
-  std::string imu_topic_;
-  std::string external_force_topic_;
-  std::string waypoint_topic_;
-  std::string command_pose_topic_;
-  std::string control_attitude_thrust_topic_;
-  std::string control_motor_speed_topic_;
-  std::string control_rate_thrust_topic_;
-  std::string wind_speed_topic_;
-  std::string wrench_topic_;
-  std::string motor_topic_;
+  std::string ground_truth_pose_pub_topic_;
+  std::string ground_truth_twist_pub_topic_;
+  std::string imu_pub_topic_;
+  std::string imu_sub_topic_;
+  std::string wind_pub_topic_;
+  std::string wind_sub_topic_;
+  std::string waypoint_pub_topic_;
+  std::string waypoint_sub_topic_;
+  std::string control_attitude_thrust_pub_topic_;
+  std::string control_attitude_thrust_sub_topic_;
+  std::string control_motor_speed_pub_topic_;
+  std::string control_motor_speed_sub_topic_;
+  std::string control_rate_thrust_pub_topic_;
+  std::string control_rate_thrust_sub_topic_;
+  std::string collisions_pub_topic_;
+  std::string motor_pub_topic_;
   std::string frame_id_;
   std::string link_name_;
   std::string bag_filename_;
-  std::string recording_service_name_;
   double rotor_velocity_slowdown_sim_;
 
-  /// \brief Mutex lock for thread safety of writing bag files
+  /// \brief Mutex lock for thread safty of writing bag files
   boost::mutex mtx_;
-
-  /// \brief Whether the plugin should wait for user command to start recording
-  bool wait_to_record_;
-
-  /// \brief Whether the plugin is currenly recording a rosbag
-  bool is_recording_;
 
   rosbag::Bag bag_;
   ros::NodeHandle *node_handle_;
 
   // Ros subscribers
   ros::Subscriber imu_sub_;
-  ros::Subscriber external_force_sub_;
+  ros::Subscriber wind_sub_;
   ros::Subscriber waypoint_sub_;
   ros::Subscriber control_attitude_thrust_sub_;
   ros::Subscriber control_motor_speed_sub_;
   ros::Subscriber control_rate_thrust_sub_;
-  ros::Subscriber wind_speed_sub_;
-  ros::Subscriber command_pose_sub_;
-
-  // Ros service server
-  ros::ServiceServer recording_service_;
 
   std::ofstream csvOut;
 
@@ -261,7 +243,6 @@ class GazeboBagPlugin : public ModelPlugin {
   }
 
 };
-
-} // namespace gazebo
+}
 
 #endif // ROTORS_GAZEBO_PLUGINS_GAZEBO_BAG_PLUGIN_H

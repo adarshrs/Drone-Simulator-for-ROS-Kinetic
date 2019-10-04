@@ -62,8 +62,7 @@ class LeePositionController {
   void CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities) const;
 
   void SetOdometry(const EigenOdometry& odometry);
-  void SetTrajectoryPoint(
-    const mav_msgs::EigenTrajectoryPoint& command_trajectory);
+  void SetCommandTrajectory(const mav_msgs::EigenCommandTrajectory& command_trajectory);
 
   LeePositionControllerParameters controller_parameters_;
   VehicleParameters vehicle_parameters_;
@@ -77,11 +76,10 @@ class LeePositionController {
   Eigen::Vector3d normalized_angular_rate_gain_;
   Eigen::MatrixX4d angular_acc_to_rotor_velocities_;
 
-  mav_msgs::EigenTrajectoryPoint command_trajectory_;
+  mav_msgs::EigenCommandTrajectory command_trajectory_;
   EigenOdometry odometry_;
 
-  void ComputeDesiredAngularAcc(const Eigen::Vector3d& acceleration,
-                                Eigen::Vector3d* angular_acceleration) const;
+  void ComputeDesiredAngularAcc(const Eigen::Vector3d& acceleration, Eigen::Vector3d* angular_acceleration) const;
   void ComputeDesiredAcceleration(Eigen::Vector3d* acceleration) const;
 };
 }

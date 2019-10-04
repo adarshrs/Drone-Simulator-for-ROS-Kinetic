@@ -21,21 +21,14 @@
 #include <thread>
 #include <chrono>
 
-#include <Eigen/Core>
-#include <mav_msgs/conversions.h>
-#include <mav_msgs/default_topics.h>
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
-#include <trajectory_msgs/MultiDOFJointTrajectory.h>
+#include <mav_msgs/CommandTrajectory.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv){
   ros::init(argc, argv, "hovering_example");
   ros::NodeHandle nh;
-  // Create a private node handle for accessing node parameters.
-  ros::NodeHandle nh_private("~");
-  ros::Publisher trajectory_pub =
-      nh.advertise<trajectory_msgs::MultiDOFJointTrajectory>(
-          mav_msgs::default_topics::COMMAND_TRAJECTORY, 10);
+  ros::Publisher trajectory_pub = nh.advertise<mav_msgs::CommandTrajectory>("command/trajectory", 10);
   ROS_INFO("Started hovering example.");
 
   std_srvs::Empty srv;
@@ -53,36 +46,27 @@ int main(int argc, char** argv) {
   if (!unpaused) {
     ROS_FATAL("Could not wake up Gazebo.");
     return -1;
-  } else {
+  }
+  else {
     ROS_INFO("Unpaused the Gazebo simulation.");
   }
 
   // Wait for 5 seconds to let the Gazebo GUI show up.
   ros::Duration(5.0).sleep();
 
-  trajectory_msgs::MultiDOFJointTrajectory trajectory_msg;
-  trajectory_msg.header.stamp = ros::Time::now();
+  mav_msgs::CommandTrajectory trajectory_msg;
 
-  // Default desired position and yaw.
-  Eigen::Vector3d desired_position(0.0, 0.0, 1.0);
-  double desired_yaw = 0.0;
-
-  // Overwrite defaults if set as node parameters.
-  nh_private.param("x", desired_position.x(), desired_position.x());
-  nh_private.param("y", desired_position.y(), desired_position.y());
-  nh_private.param("z", desired_position.z(), desired_position.z());
-  nh_private.param("yaw", desired_yaw, desired_yaw);
-
-  mav_msgs::msgMultiDofJointTrajectoryFromPositionYaw(
-      desired_position, desired_yaw, &trajectory_msg);
-
-  ROS_INFO("Publishing waypoint on namespace %s: [%f, %f, %f].",
-           nh.getNamespace().c_str(), desired_position.x(),
-           desired_position.y(), desired_position.z());
-  trajectory_pub.publish(trajectory_msg);
-
-  ros::spinOnce();
-  ros::shutdown();
-
-  return 0;
+  while (ros::ok()) {
+    nh.param<double>("wp_x", trajectory_msg.position.x, 0.0);
+    nh.param<double>("wp_y", trajectory_msg.position.y, 0.0);
+    nh.param<double>("wp_z", trajectory_msg.position.z, 1.0);
+    ROS_INFO("Publishing waypoint on namespace %s: [%f, %f, %f].",
+             nh.getNamespace().c_str(),
+             trajectory_msg.position.x,
+             trajectory_msg.position.y,
+             trajectory_msg.position.z);
+    trajectory_msg.header.stamp = ros::Time::now();
+    trajectory_pub.publish(trajectory_msg);
+    ros::Duration(1.0).sleep();
+  }
 }

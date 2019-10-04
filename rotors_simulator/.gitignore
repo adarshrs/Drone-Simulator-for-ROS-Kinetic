@@ -2,7 +2,3 @@
 .cproject
 .project
 .settings
-*.pyc
-*~
-*/models/iris/*.sdf
-*.user

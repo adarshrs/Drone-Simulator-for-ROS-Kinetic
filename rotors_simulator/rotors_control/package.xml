@@ -1,10 +1,9 @@
-<package format="2">
+<package>
   <name>rotors_control</name>
-  <version>2.2.3</version>
+  <version>1.0.0</version>
   <description>RotorS control package</description>
 
-  <maintainer email="fadri.furrer@mavt.ethz.ch">Fadri Furrer</maintainer>
-  <maintainer email="mina.kamel@mavt.ethz.ch">Mina Kamel</maintainer>
+  <maintainer email="markus.achtelik_devel@mavt.ethz.ch">Markus Achtelik</maintainer>
 
   <author>Fadri Furrer</author>
   <author>Michael Burri</author>
@@ -14,17 +13,19 @@
 
   <license>ASL 2.0</license>
 
-  <url type="website">https://github.com/ethz-asl/rotors_simulator</url>
-  <url type="bugtracker">https://github.com/ethz-asl/rotors_simulator/issues</url>
-
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>mav_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>glog_catkin</build_depend>
 
-  <depend>cmake_modules</depend>
-  <depend>dynamic_reconfigure</depend>
-  <depend>geometry_msgs</depend>
-  <depend>mav_msgs</depend>
-  <depend>nav_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>sensor_msgs</depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>mav_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>glog_catkin</run_depend>
 
 </package>
