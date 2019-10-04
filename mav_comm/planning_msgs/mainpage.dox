@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b mav_planning_msgs 
+\b planning_msgs 
 
 <!-- 
 Provide an overview of your package.

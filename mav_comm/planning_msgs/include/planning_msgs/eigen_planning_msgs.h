@@ -2,8 +2,6 @@
  * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
  * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
  * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Helen Oleynikova, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +16,27 @@
  * limitations under the License.
  */
 
-#ifndef MAV_MSGS_DEFAULT_VALUES_H_
-#define MAV_MSGS_DEFAULT_VALUES_H_
+#ifndef PLANNING_MSGS_EIGEN_MAV_MSGS_H
+#define PLANNING_MSGS_EIGEN_MAV_MSGS_H
 
-#include <mav_msgs/common.h>
+#include <Eigen/Eigen>
+#include <vector>
 
-namespace mav_msgs {
+namespace planning_msgs {
 
-const double kZurichLatitude = 0.8267;
-const double kZurichHeight = 405.94;
-const double kGravity = MagnitudeOfGravity(kZurichHeight, kZurichLatitude);
+struct EigenWayPoint {
+  EigenWayPoint():time(0.0), type(0) {};
+
+  Eigen::VectorXd x;
+  Eigen::VectorXd y;
+  Eigen::VectorXd z;
+  Eigen::VectorXd yaw;
+  double time;
+  int type;
+};
+
+typedef std::vector<EigenWayPoint> EigenWaypointArray;
+
 }
 
-#endif /* MAV_MSGS_DEFAULT_VALUES_H_ */
+#endif
