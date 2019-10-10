@@ -23,6 +23,8 @@ Install essential dependencies -
 ~~~
 $ sudo apt-get install ros-kinetic-octomap-ros    
 $ sudo apt-get install ros-kinetic-mavlink
+$ sudo apt-get install python3-dev python3-opencv python3-wxgtk3.0 python3-pip python3-matplotlib python3-pygame python3-lxml python3-yaml
+$ pip install MAVProxy
 ~~~
 
 Build all packages in the workspace -
