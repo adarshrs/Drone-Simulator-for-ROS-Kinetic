@@ -38,7 +38,7 @@ First source your workspace, then navigate into the ardupilot/ArduCopter directo
 ~~~
 $ source catkin_ws/devel/setup.bash   
 $ cd catkin_ws/src/ardupilot/ArduCopter   
-$ ../Tools/autotest/sim_vehicles.sh -j 4 -f Gazebo
+$ ../Tools/autotest/sim_vehicle.sh -j 4 -f Gazebo
 ~~~
 
 In another terminal, source your workspace again and launch the Gazebo simulation - 
